@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronLeftIcon, SearchIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
 
@@ -74,11 +74,8 @@ export const DashboardPostsListSuspense = () => {
         </div>
 
         <Button variant="outline" onClick={() => {}} disabled={false}>
-          <ChevronLeftIcon className="size-4" />
           Next
-          {/* 正しい内容は下記 */}
-          {/* Next */}
-          {/* <ChevronRightIcon className="size-4" /> */}
+          <ChevronRightIcon className="size-4" />
         </Button>
       </div>
     </div>
