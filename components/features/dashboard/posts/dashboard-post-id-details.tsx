@@ -6,6 +6,8 @@ import { ja } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
+import { UpdatePostForm } from './update-post-form'
+
 interface DashboardPostIdDetailsProps {
   postId: string
 }
@@ -53,7 +55,9 @@ export const DashboardPostIdDetailsSuspense = ({
           </CardTitle>
           <Separator className="mt-2" />
         </CardHeader>
-        <CardContent>{/* <UpdatePostForm post={post} /> */}</CardContent>
+        <CardContent>
+          <UpdatePostForm post={post} />
+        </CardContent>
       </Card>
     </div>
   )
