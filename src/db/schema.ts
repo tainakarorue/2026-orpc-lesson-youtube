@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -117,3 +118,12 @@ export const postRelations = relations(posts, ({ one, many }) => ({
     references: [user.id],
   }),
 }))
+
+// drizzle-zod でテーブル定義から自動生成
+// posts テーブルのカラム変更が自動でスキーマに反映される
+export const postSchema = createSelectSchema(posts)
+
+export const postInsertSchema = createInsertSchema(posts).pick({
+  title: true,
+  content: true,
+})
