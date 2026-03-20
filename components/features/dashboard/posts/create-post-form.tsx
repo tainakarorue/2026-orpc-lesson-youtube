@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 
+import { useCreatePost } from '@/hooks/posts/use-posts'
+
 import {
   Field,
   FieldError,
@@ -28,6 +30,7 @@ const formSchema = z.object({
 })
 
 export const CreatePostForm = () => {
+  const { mutate: createPost, isPending } = useCreatePost()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +40,7 @@ export const CreatePostForm = () => {
   })
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+    createPost(values)
   }
 
   return (
@@ -99,7 +102,7 @@ export const CreatePostForm = () => {
         </FieldGroup>
         <Button
           type="submit"
-          disabled={false}
+          disabled={isPending}
           className="w-full cursor-pointer"
         >
           Create Post

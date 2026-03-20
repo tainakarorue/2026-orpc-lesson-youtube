@@ -2,10 +2,12 @@ import { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 
 import { base } from './base'
 import { userRouter } from './routers/user'
+import { postsRouter } from './routers/posts'
 
 export const router = base.router({
   // 他のサブルーターをここに追加
   user: userRouter,
+  posts: postsRouter,
 })
 
 // クライアント側で型推論に使う
