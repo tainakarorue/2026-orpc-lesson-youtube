@@ -7,7 +7,9 @@ import {
   HydrationBoundary,
   type FetchQueryOptions,
   type FetchInfiniteQueryOptions,
+  type QueryKey,
 } from '@tanstack/react-query'
+import type { InfiniteOptionsBase } from '@orpc/react-query'
 
 import { client } from '@/lib/orpc'
 import { makeQueryClient } from '@/lib/query-client'
@@ -32,21 +34,27 @@ export function HydrateClient({ children }: { children: React.ReactNode }) {
 }
 
 // RSC でのprefetchヘルパー（通常クエリ用）
+// Promise を返すので RSC 側で await すること → dehydrate 前にデータが揃う
 export function prefetch(queryOptions: FetchQueryOptions) {
   const queryClient = getQueryClient()
-  void queryClient.prefetchQuery(queryOptions)
+  return queryClient.prefetchQuery(queryOptions)
 }
 
 // RSC でのprefetchヘルパー（無限クエリ用）
-export function prefetchInfinite(
-  queryOptions: FetchInfiniteQueryOptions<
-    unknown,
-    Error,
-    unknown,
-    readonly unknown[],
-    unknown
-  >,
+// InfiniteOptionsBase を直接受け取り、prefetchInfiniteQuery に渡す
+export function prefetchInfinite<TData, TPageParam>(
+  queryOptions: InfiniteOptionsBase<TData, Error, TPageParam> & {
+    initialPageParam: TPageParam
+  },
 ) {
   const queryClient = getQueryClient()
-  void queryClient.prefetchInfiniteQuery(queryOptions)
+  return queryClient.prefetchInfiniteQuery(
+    queryOptions as FetchInfiniteQueryOptions<
+      TData,
+      Error,
+      TData,
+      QueryKey,
+      TPageParam
+    >,
+  )
 }
