@@ -8,7 +8,7 @@ import { db } from '@/src/db'
 import { base, authed } from '../base'
 import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
 
-const pagenationSchema = z.object({
+const paginationSchema = z.object({
   page: z.number().int().min(0).default(0),
   limit: z.number().int().min(1).max(100).default(MAX_POSTS_PER_PAGE),
   search: z.string().default(''),
@@ -16,7 +16,7 @@ const pagenationSchema = z.object({
 
 const paginationResultSchema = z.object({
   posts: z.array(postSchema),
-  pagenation: z.object({
+  pagination: z.object({
     page: z.number(),
     limit: z.number(),
     total: z.number(),
@@ -46,7 +46,7 @@ export const postsRouter = base.router({
     }),
 
   myList: authed
-    .input(pagenationSchema)
+    .input(paginationSchema)
     .output(paginationResultSchema)
     .handler(async ({ input, context }) => {
       const { page = 0, limit = MAX_POSTS_PER_PAGE, search = '' } = input
@@ -77,7 +77,7 @@ export const postsRouter = base.router({
       if (!postsData || !postsData.length) {
         return {
           posts: [],
-          pagenation: {
+          pagination: {
             page,
             limit,
             total: 0,
@@ -95,7 +95,7 @@ export const postsRouter = base.router({
 
       return {
         posts: postsData,
-        pagenation: {
+        pagination: {
           page,
           limit,
           total,

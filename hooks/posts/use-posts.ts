@@ -13,6 +13,7 @@ import { orpc } from '@/lib/orpc-rq.client'
 
 import { postCreateModalOpenAtom } from '@/store/posts'
 import { postInsertSchema } from '@/src/db/schema'
+import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
 
 type CreatePostInput = z.infer<typeof postInsertSchema>
 type UpdatePostInput = z.infer<typeof postInsertSchema>
@@ -41,6 +42,16 @@ export const useCreatePost = () => {
   })
 }
 
-export const useGetMyPosts = (params: GetPostsParams = {}) => {
-  return useSuspenseQuery(orpc.posts.myList.queryOptions({ input: params }))
+// export const useGetMyPosts = (params: GetPostsParams = {}) => {
+//   return useSuspenseQuery(orpc.posts.myList.queryOptions({ input: params }))
+// }
+
+export const useGetMyPosts = ({
+  page = 0,
+  limit = MAX_POSTS_PER_PAGE,
+  search = '',
+}: GetPostsParams = {}) => {
+  return useSuspenseQuery(
+    orpc.posts.myList.queryOptions({ input: { page, limit, search } }),
+  )
 }
