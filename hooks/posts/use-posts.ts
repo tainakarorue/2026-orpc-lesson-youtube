@@ -1,6 +1,10 @@
 'use client'
 import { z } from 'zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { toast } from 'sonner'
 
@@ -12,6 +16,12 @@ import { postInsertSchema } from '@/src/db/schema'
 
 type CreatePostInput = z.infer<typeof postInsertSchema>
 type UpdatePostInput = z.infer<typeof postInsertSchema>
+
+type GetPostsParams = {
+  page?: number
+  limit?: number
+  search?: string
+}
 
 export const useCreatePost = () => {
   const setModalOpen = useSetAtom(postCreateModalOpenAtom)
@@ -29,4 +39,8 @@ export const useCreatePost = () => {
       toast.error('Failed to create post')
     },
   })
+}
+
+export const useGetMyPosts = (params: GetPostsParams = {}) => {
+  return useSuspenseQuery(orpc.posts.myList.queryOptions({ input: params }))
 }
