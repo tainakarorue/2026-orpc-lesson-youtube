@@ -1,17 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
+import { ErrorBoundary } from 'react-error-boundary'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
+import { useSetAtom } from 'jotai'
+
+import { postCreateModalOpenAtom } from '@/store/posts'
+import { useGetMyPosts } from '@/hooks/posts/use-posts'
+import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
 
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { useGetMyPosts } from '@/hooks/posts/use-posts'
-import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
+import { SuspenseLoading } from '@/components/suspense-loading'
+import { SuspenseMessage } from '@/components/suspense-message'
+
+export const DashboardPostsListLoading = () => {
+  return (
+    <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
+      <SuspenseLoading title="Loading posts" description="Please wait..." />
+    </div>
+  )
+}
+
+export const DashboardPostsListError = () => {
+  return (
+    <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
+      <SuspenseMessage
+        title="Something went wrong"
+        description="Failed to fetch post"
+      />
+    </div>
+  )
+}
+
+export const DashboardPostsListEmpty = () => {
+  const setModalOpen = useSetAtom(postCreateModalOpenAtom)
+
+  return (
+    <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
+      <SuspenseMessage
+        title="Something went wrong"
+        description="Failed to fetch post"
+        btnLabel="Try Create Post"
+        onClick={() => setModalOpen(true)}
+      />
+    </div>
+  )
+}
 
 export const DashboardPostsList = () => {
   const [page, setPage] = useState(0)
@@ -27,7 +67,11 @@ export const DashboardPostsList = () => {
           className="pl-8"
         />
       </div>
-      <DashboardPostsListSuspense page={page} onPageChange={setPage} />
+      <ErrorBoundary fallback={<p>Error...</p>}>
+        <Suspense fallback={<DashboardPostsListLoading />}>
+          <DashboardPostsListSuspense page={page} onPageChange={setPage} />
+        </Suspense>
+      </ErrorBoundary>
     </>
   )
 }
@@ -41,9 +85,13 @@ export const DashboardPostsListSuspense = ({
   page,
   onPageChange,
 }: DashboardPostsListSuspenseProps) => {
-  const { data } = useGetMyPosts({ page, limit: MAX_POSTS_PER_PAGE })
+  const { data } = useGetMyPosts({
+    page,
+    limit: MAX_POSTS_PER_PAGE,
+    search: '',
+  })
 
-  const { posts, pagenation } = data
+  const { posts, pagination } = data
 
   return (
     <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
@@ -83,8 +131,7 @@ export const DashboardPostsListSuspense = ({
         </Button>
 
         <div className="text-sm text-muted-foreground">
-          Page {pagenation.page + 1} of {pagenation.totalPages}
-          {/* Page {pagenation.page + 1} of {pagenation.totalPages} */}
+          Page {pagination.page + 1} of {pagination.totalPages}
         </div>
 
         <Button
