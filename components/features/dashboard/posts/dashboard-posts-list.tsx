@@ -44,8 +44,8 @@ export const DashboardPostsListEmpty = () => {
   return (
     <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
       <SuspenseMessage
-        title="Something went wrong"
-        description="Failed to fetch post"
+        title="No post found"
+        description="Please create post."
         btnLabel="Try Create Post"
         onClick={() => setModalOpen(true)}
       />
