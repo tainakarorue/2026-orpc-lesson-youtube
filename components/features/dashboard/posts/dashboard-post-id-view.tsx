@@ -2,6 +2,7 @@
 
 import { Trash2Icon } from 'lucide-react'
 
+import { useDeletePost } from '@/hooks/posts/use-posts'
 import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 import { Button } from '@/components/ui/button'
@@ -18,13 +19,14 @@ export const DashboardPostIdView = ({ postId }: Props) => {
     title: 'Delete Post',
     description: 'Are you sure you want to delete post?',
   })
+  const { mutateAsync: deletePost, isPending } = useDeletePost()
 
   const handleDeletePost = async () => {
     const ok = await confirm()
 
     if (!ok) return
 
-    alert('ok')
+    await deletePost(postId)
   }
 
   return (
@@ -38,6 +40,7 @@ export const DashboardPostIdView = ({ postId }: Props) => {
             onClick={handleDeletePost}
             variant="destructive"
             className="w-fit"
+            disabled={isPending}
           >
             <Trash2Icon className="size-4" />
             Delete Post

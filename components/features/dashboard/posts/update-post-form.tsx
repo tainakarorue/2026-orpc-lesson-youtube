@@ -4,6 +4,9 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 
+import { useUpdatePost } from '@/hooks/posts/use-posts'
+import { Post } from '@/types/posts'
+
 import {
   Field,
   FieldError,
@@ -18,7 +21,6 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group'
 import { Button } from '@/components/ui/button'
-import { Post } from '@/types/posts'
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Post title is required' }),
@@ -33,6 +35,7 @@ interface Props {
 }
 
 export const UpdatePostForm = ({ post }: Props) => {
+  const { mutate: updatePost, isPending } = useUpdatePost()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,7 +45,7 @@ export const UpdatePostForm = ({ post }: Props) => {
   })
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+    updatePost({ postId: post.id, values })
   }
 
   return (
@@ -104,7 +107,7 @@ export const UpdatePostForm = ({ post }: Props) => {
         </FieldGroup>
         <Button
           type="submit"
-          disabled={false}
+          disabled={isPending}
           className="w-full cursor-pointer"
         >
           Update Post
