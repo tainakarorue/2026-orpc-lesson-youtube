@@ -105,4 +105,22 @@ export const postsRouter = base.router({
         },
       }
     }),
+
+  myGetById: authed
+    .input(z.object({ id: z.string() }))
+    .output(postSchema.nullable())
+    .handler(async ({ input, context }) => {
+      const [post] = await db
+        .select()
+        .from(posts)
+        .where(
+          and(
+            eq(posts.id, input.id),
+            eq(posts.userId, context.session.user.id),
+          ),
+        )
+        .limit(1)
+
+      return post ?? null
+    }),
 })

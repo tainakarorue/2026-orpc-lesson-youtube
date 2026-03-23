@@ -37,7 +37,7 @@ export const SuspenseMessage = ({
       </EmptyHeader>
       <EmptyContent>
         <div className="flex items-center justify-center gap-2">
-          {onClick && <Button onClick={onClick}>{btnLabel}</Button>}
+          {onClick && btnLabel && <Button onClick={onClick}>{btnLabel}</Button>}
           <Button variant="outline" asChild>
             <Link href="/">Return to Home</Link>
           </Button>

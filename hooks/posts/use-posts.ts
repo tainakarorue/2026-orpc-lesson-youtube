@@ -55,3 +55,7 @@ export const useGetMyPosts = ({
     orpc.posts.myList.queryOptions({ input: { page, limit, search } }),
   )
 }
+
+export const useMyGetPostById = (id: string) => {
+  return useSuspenseQuery(orpc.posts.myGetById.queryOptions({ input: { id } }))
+}
