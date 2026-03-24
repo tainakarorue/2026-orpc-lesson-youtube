@@ -7,6 +7,7 @@ import { db } from '@/src/db'
 
 import { base, authed } from '../base'
 import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
+import { auth } from '@/lib/auth'
 
 const paginationSchema = z.object({
   page: z.number().int().min(0).default(0),
@@ -122,5 +123,48 @@ export const postsRouter = base.router({
         .limit(1)
 
       return post ?? null
+    }),
+  update: authed
+    .input(postInsertSchema.extend({ id: z.string() }))
+    .output(postSchema)
+    .handler(async ({ input, context }) => {
+      const [updated] = await db
+        .update(posts)
+        .set({ title: input.title, content: input.content })
+        .where(
+          and(
+            eq(posts.id, input.id),
+            eq(posts.userId, context.session.user.id),
+          ),
+        )
+        .returning()
+
+      if (!updated)
+        throw new ORPCError('NOT_FOUND', {
+          message: 'Post not found or unauthorized',
+        })
+
+      return updated
+    }),
+  delete: authed
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string() }))
+    .handler(async ({ input, context }) => {
+      const [deleted] = await db
+        .delete(posts)
+        .where(
+          and(
+            eq(posts.id, input.id),
+            eq(posts.userId, context.session.user.id),
+          ),
+        )
+        .returning({ id: posts.id })
+
+      if (!deleted)
+        throw new ORPCError('NOT_FOUND', {
+          message: 'Post not found or unauthorized',
+        })
+
+      return deleted
     }),
 })

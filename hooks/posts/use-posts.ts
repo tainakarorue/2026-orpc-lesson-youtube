@@ -1,4 +1,6 @@
 'use client'
+
+import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import {
   useMutation,
@@ -58,4 +60,48 @@ export const useGetMyPosts = ({
 
 export const useMyGetPostById = (id: string) => {
   return useSuspenseQuery(orpc.posts.myGetById.queryOptions({ input: { id } }))
+}
+
+export const useUpdatePost = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      postId,
+      values,
+    }: {
+      postId: string
+      values: UpdatePostInput
+    }) => client.posts.update({ id: postId, ...values }),
+    onSuccess: (data) => {
+      toast.success('Post updated')
+      queryClient.invalidateQueries({ queryKey: orpc.posts.myList.key() })
+      queryClient.invalidateQueries({
+        queryKey: orpc.posts.myGetById.key({ input: { id: data.id } }),
+      })
+    },
+    onError: () => {
+      toast.error('Failed to update post')
+    },
+  })
+}
+
+export const useDeletePost = () => {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: (postId: string) => client.posts.delete({ id: postId }),
+    onSuccess: (data) => {
+      toast.success('Post deleted')
+      queryClient.invalidateQueries({ queryKey: orpc.posts.myList.key() })
+      queryClient.invalidateQueries({
+        queryKey: orpc.posts.myGetById.key({ input: { id: data.id } }),
+      })
+      router.push('/dashboard/posts')
+    },
+    onError: () => {
+      toast.error('Failed to delete post')
+    },
+  })
 }
