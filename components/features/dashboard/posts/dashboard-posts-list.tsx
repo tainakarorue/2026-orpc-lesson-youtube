@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
@@ -11,6 +11,7 @@ import { useSetAtom } from 'jotai'
 import { postCreateModalOpenAtom } from '@/store/posts'
 import { useGetMyPosts } from '@/hooks/posts/use-posts'
 import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
+import { usePostParams } from '@/modules/posts/params/use-post-params'
 
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -54,7 +55,11 @@ export const DashboardPostsListEmpty = () => {
 }
 
 export const DashboardPostsList = () => {
-  const [page, setPage] = useState(0)
+  const [params, setParams] = usePostParams()
+  const handleSearchChange = (value: string) => {
+    setParams({ page: 1, search: value })
+  }
+
   return (
     <>
       <div className="relative w-full max-w-[220px]">
@@ -62,36 +67,49 @@ export const DashboardPostsList = () => {
         <Input
           type="text"
           placeholder="Search posts..."
-          value=""
-          onChange={() => {}}
+          value={params.search || ''}
+          onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-8"
         />
       </div>
       <ErrorBoundary fallback={<p>Error...</p>}>
         <Suspense fallback={<DashboardPostsListLoading />}>
-          <DashboardPostsListSuspense page={page} onPageChange={setPage} />
+          <DashboardPostsListSuspense />
         </Suspense>
       </ErrorBoundary>
     </>
   )
 }
 
-type DashboardPostsListSuspenseProps = {
-  page: number
-  onPageChange: (page: number) => void
-}
+export const DashboardPostsListSuspense = () => {
+  const [params, setParams] = usePostParams()
 
-export const DashboardPostsListSuspense = ({
-  page,
-  onPageChange,
-}: DashboardPostsListSuspenseProps) => {
   const { data } = useGetMyPosts({
-    page,
+    page: params.page - 1,
     limit: MAX_POSTS_PER_PAGE,
-    search: '',
+    search: params.search,
   })
 
   const { posts, pagination } = data
+
+  if (posts.length === 0) {
+    return params.search ? (
+      <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-2">
+            <p className="text-lg font-semibold text-muted-foreground">
+              No posts found
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Try adjusting your search
+            </p>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <DashboardPostsListEmpty />
+    )
+  }
 
   return (
     <div className="w-full flex-1 flex flex-col bg-accent rounded-md p-6 gap-y-4">
@@ -123,7 +141,9 @@ export const DashboardPostsListSuspense = ({
       <div className="flex items-center justify-between">
         <Button
           variant="outline"
-          onClick={() => onPageChange(page - 1)}
+          onClick={() =>
+            setParams({ page: params.page - 1, search: params.search })
+          }
           disabled={false}
         >
           <ChevronLeftIcon className="size-4" />
@@ -136,7 +156,9 @@ export const DashboardPostsListSuspense = ({
 
         <Button
           variant="outline"
-          onClick={() => onPageChange(page + 1)}
+          onClick={() =>
+            setParams({ page: params.page + 1, search: params.search })
+          }
           disabled={false}
         >
           Next
