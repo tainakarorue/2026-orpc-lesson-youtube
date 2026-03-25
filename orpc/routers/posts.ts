@@ -7,7 +7,6 @@ import { db } from '@/src/db'
 
 import { base, authed } from '../base'
 import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
-import { auth } from '@/lib/auth'
 
 const paginationSchema = z.object({
   page: z.number().int().min(0).default(0),
@@ -63,6 +62,65 @@ export const postsRouter = base.router({
             ),
           )
         : eq(posts.userId, userId)
+
+      const postsData = await db
+        .select({
+          ...getTableColumns(posts),
+          total: sql<number>`(count(*) OVER())::int`.as('total'),
+        })
+        .from(posts)
+        .where(whereCondition)
+        .orderBy(desc(posts.createdAt))
+        .limit(limit)
+        .offset(skip)
+
+      if (!postsData || !postsData.length) {
+        return {
+          posts: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+          },
+        }
+      }
+
+      const total = postsData[0]?.total ?? 0
+      const totalPages = Math.ceil(total / limit)
+      const hasNextPage = skip + limit < total
+      const hasPrevPage = page > 0
+
+      return {
+        posts: postsData,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage,
+          hasPrevPage,
+        },
+      }
+    }),
+
+  list: base
+    .input(paginationSchema)
+    .output(paginationResultSchema)
+    .handler(async ({ input }) => {
+      const { page = 0, limit = MAX_POSTS_PER_PAGE, search = '' } = input
+
+      const skip = page * limit
+      const whereCondition = search
+        ? and(
+            or(
+              ilike(posts.title, `%${search}%`),
+              ilike(posts.content, `%${search}%`),
+            ),
+          )
+        : undefined
 
       const postsData = await db
         .select({

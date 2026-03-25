@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import {
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
   useSuspenseQuery,
@@ -26,6 +27,19 @@ type GetPostsParams = {
   search?: string
 }
 
+export const useInfiniteGetPosts = (params: Omit<GetPostsParams, 'page'>) => {
+  return useInfiniteQuery(
+    orpc.posts.list.infiniteOptions({
+      input: (pageParam) => ({ ...params, page: pageParam }),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) =>
+        lastPage.pagination.hasNextPage
+          ? lastPage.pagination.page + 1
+          : undefined,
+    }),
+  )
+}
+
 export const useCreatePost = () => {
   const setModalOpen = useSetAtom(postCreateModalOpenAtom)
   const queryClient = useQueryClient()
@@ -35,8 +49,8 @@ export const useCreatePost = () => {
     onSuccess: (data) => {
       setModalOpen(false)
       toast.success(`Post ${data.title} created`)
-      //   queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() }),
-      //   queryClient.invalidateQueries({queryKey: orpc.posts.getById.key({input: {id: data.id}})})
+      queryClient.invalidateQueries({ queryKey: orpc.posts.myList.key() })
+      queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() })
     },
     onError: () => {
       toast.error('Failed to create post')
@@ -76,6 +90,7 @@ export const useUpdatePost = () => {
     onSuccess: (data) => {
       toast.success('Post updated')
       queryClient.invalidateQueries({ queryKey: orpc.posts.myList.key() })
+      queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() })
       queryClient.invalidateQueries({
         queryKey: orpc.posts.myGetById.key({ input: { id: data.id } }),
       })
@@ -95,6 +110,7 @@ export const useDeletePost = () => {
     onSuccess: (data) => {
       toast.success('Post deleted')
       queryClient.invalidateQueries({ queryKey: orpc.posts.myList.key() })
+      queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() })
       queryClient.invalidateQueries({
         queryKey: orpc.posts.myGetById.key({ input: { id: data.id } }),
       })
