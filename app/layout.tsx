@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { ORPCQueryProvider } from '@/lib/orpc-rq.client'
 
@@ -34,18 +35,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ORPCQueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <ToasterProvider />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </ThemeProvider>
-        </ORPCQueryProvider>
+        <NuqsAdapter>
+          <ORPCQueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <ToasterProvider />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </ThemeProvider>
+          </ORPCQueryProvider>
+        </NuqsAdapter>
       </body>
     </html>
   )
