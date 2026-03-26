@@ -14,7 +14,7 @@ const Page = async ({ searchParams }: Props) => {
 
   await prefetch(
     orpc.posts.myList.queryOptions({
-      input: { page: 0, limit: MAX_POSTS_PER_PAGE, search: '' },
+      input: { page: page - 1, limit: MAX_POSTS_PER_PAGE, search },
     }),
   )
 
