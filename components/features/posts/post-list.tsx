@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Loader2Icon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
+import { useOnInView } from 'react-intersection-observer'
 
 import { useInfiniteGetPosts } from '@/hooks/posts/use-posts'
 import { MAX_POSTS_PER_PAGE } from '@/modules/posts/constants'
@@ -48,6 +49,18 @@ export const PostsList = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteGetPosts({ limit: MAX_POSTS_PER_PAGE })
 
+  const loadMoreRef = useOnInView(
+    () => {
+      if (hasNextPage) {
+        fetchNextPage()
+      }
+    },
+    {
+      threshold: 0,
+      triggerOnce: false,
+    },
+  )
+
   if (status === 'pending') {
     return <PostsListLoading />
   }
@@ -90,7 +103,7 @@ export const PostsList = () => {
         ))}
       </ul>
 
-      {hasNextPage && (
+      {/* {hasNextPage && (
         <div className="flex justify-center">
           <Button
             variant="outline"
@@ -103,7 +116,13 @@ export const PostsList = () => {
             もっと見る
           </Button>
         </div>
-      )}
+      )} */}
+
+      <div ref={loadMoreRef} className="flex justify-center">
+        {isFetchingNextPage && (
+          <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+        )}
+      </div>
 
       {!hasNextPage && posts.length > 0 && (
         <p className="text-center text-xs text-muted-foreground">
