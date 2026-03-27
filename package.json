@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@orpc/client": "^1.13.6",
+    "@orpc/openapi": "^1.13.13",
     "@orpc/react-query": "^1.13.6",
     "@orpc/server": "^1.13.6",
     "@orpc/tanstack-query": "^1.13.6",
